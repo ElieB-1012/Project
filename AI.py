@@ -1,14 +1,6 @@
-
 # utilities
 import re
-import pickle
-import numpy as np
 import pandas as pd
-
-# plotting
-import seaborn as sns
-from wordcloud import WordCloud
-import matplotlib.pyplot as plt
 
 # nltk
 from nltk.stem import WordNetLemmatizer
@@ -16,11 +8,12 @@ from nltk.stem import WordNetLemmatizer
 # sklearn
 from sklearn.svm import LinearSVC
 from sklearn.naive_bayes import BernoulliNB
-from sklearn.linear_model import LogisticRegression
 
 from sklearn.model_selection import train_test_split
 from sklearn.feature_extraction.text import TfidfVectorizer
-from sklearn.metrics import confusion_matrix, classification_report
+from sklearn.metrics import classification_report
+
+import time
 
 # Importing the dataset
 DATASET_COLUMNS  = ["sentiment", "ids", "date", "flag", "user", "text"]
@@ -33,10 +26,6 @@ dataset = dataset[['sentiment','text']]
 # Replacing the values to ease understanding.
 dataset['sentiment'] = dataset['sentiment'].replace(4,1)
 
-# Plotting the distribution for dataset.
-ax = dataset.groupby('sentiment').count().plot(kind='bar', title='Distribution of data',
-                                               legend=False)
-ax.set_xticklabels(['Negative','Positive'], rotation=0)
 
 # Storing data in lists.
 text, sentiment = list(dataset['text']), list(dataset['sentiment'])
@@ -110,23 +99,10 @@ def preprocess(textdata):
 
     return processedText
 
-import time
 t = time.time()
 processedtext = preprocess(text)
 print(f'Text Preprocessing complete.')
 print(f'Time Taken: {round(time.time()-t)} seconds')
-
-data_neg = processedtext[:1000]
-plt.figure(figsize = (20,20))
-wc = WordCloud(max_words = 1000 , width = 1600 , height = 800,
-               collocations=False).generate(" ".join(data_neg))
-plt.imshow(wc)
-
-data_pos = processedtext[800000: 801000]
-wc = WordCloud(max_words = 1000 , width = 1600 , height = 800,
-              collocations=False).generate(" ".join(data_pos))
-plt.figure(figsize = (20,20))
-plt.imshow(wc)
 
 X_train, X_test, y_train, y_test = train_test_split(processedtext, sentiment,
                                                     test_size = 0.05, random_state = 0)
@@ -149,26 +125,14 @@ def model_Evaluate(model):
     # Print the evaluation metrics for the dataset.
     print(classification_report(y_test, y_pred))
 
-    # Compute and plot the Confusion matrix
-    cf_matrix = confusion_matrix(y_test, y_pred)
 
-    categories = ['Negative', 'Positive']
-    group_names = ['True Neg', 'False Pos', 'False Neg', 'True Pos']
-    group_percentages = ['{0:.2%}'.format(value) for value in cf_matrix.flatten() / np.sum(cf_matrix)]
-
-    labels = [f'{v1}\n{v2}' for v1, v2 in zip(group_names, group_percentages)]
-    labels = np.asarray(labels).reshape(2, 2)
-
-    sns.heatmap(cf_matrix, annot=labels, cmap='Blues', fmt='',
-                xticklabels=categories, yticklabels=categories)
-
-    plt.xlabel("Predicted values", fontdict={'size': 14}, labelpad=10)
-    plt.ylabel("Actual values", fontdict={'size': 14}, labelpad=10)
-    plt.title("Confusion Matrix", fontdict={'size': 18}, pad=20)
+print('Bernoulli Naive Bayes')
 
 BNBmodel = BernoulliNB(alpha = 2)
 BNBmodel.fit(X_train, y_train)
 model_Evaluate(BNBmodel)
+
+print('Support Vector Machine')
 
 SVCmodel = LinearSVC()
 SVCmodel.fit(X_train, y_train)
