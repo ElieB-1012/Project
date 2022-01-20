@@ -18,6 +18,8 @@ import time
 # Importing the dataset
 DATASET_COLUMNS  = ["sentiment", "ids", "date", "flag", "user", "text"]
 DATASET_ENCODING = "ISO-8859-1"
+
+#Here put the path of the csv file from your computer
 dataset = pd.read_csv('/Users/elieb/Desktop/training.1600000.processed.noemoticon.csv',
                       encoding=DATASET_ENCODING , names=DATASET_COLUMNS)
 
